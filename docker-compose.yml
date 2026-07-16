@@ -11,17 +11,30 @@ services:
       - MONGO_URI=mongodb://mongo:27017/paid-media-locker
       - JWT_SECRET=supersecretjwtkey_replace_in_prod
       - STARTING_WALLET_BALANCE=100
+      - S3_PUBLIC_HOST=${S3_PUBLIC_HOST:-http://localhost:4568}
     depends_on:
       - mongo
     volumes:
       - ./backend/storage:/usr/src/app/storage
+      - ./backend/src:/usr/src/app/src
 
   mongo:
     image: mongo:latest
+    command: ["--replSet", "rs0", "--bind_ip_all", "--port", "27017"]
     ports:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
+
+  mongo-init:
+    image: mongo:latest
+    depends_on:
+      - mongo
+    command: >
+      bash -c "
+        sleep 5;
+        mongosh --host mongo:27017 --eval 'rs.initiate({_id: \"rs0\", members: [{_id: 0, host: \"mongo:27017\"}]})';
+      "
 
 volumes:
   mongo-data:

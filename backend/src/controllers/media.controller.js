@@ -81,14 +81,25 @@ exports.getFeed = async (req, res) => {
       const isOwner = m.owner._id.toString() === req.user._id.toString();
       const isUnlocked = req.user.unlockedMedia.includes(m._id);
       
-      // Generate public URL for preview (s3rver format)
-      const previewUrl = `http://10.24.8.121:4568/${BUCKET_NAME}/${m.previewKey}`;
+      // Generate public URL for preview
+      const baseUrl = process.env.S3_PUBLIC_HOST || 'http://localhost:4568';
+      const previewUrl = `${baseUrl}/${BUCKET_NAME}/${m.previewKey}`;
       
+      let originalUrl = null;
+      if (isOwner || isUnlocked) {
+        originalUrl = s3External.getSignedUrl('getObject', {
+          Bucket: BUCKET_NAME,
+          Key: m.originalKey,
+          Expires: 3600 // 1 hour for feed
+        });
+      }
+
       return {
         _id: m._id,
         owner: m.owner.name,
         price: m.price,
         previewUrl,
+        originalUrl,
         status: isOwner || isUnlocked ? 'unlocked' : 'locked',
         createdAt: m.createdAt
       };
@@ -101,40 +112,57 @@ exports.getFeed = async (req, res) => {
   }
 };
 
+const mongoose = require('mongoose');
+
 exports.unlockMedia = async (req, res) => {
+  const session = await mongoose.startSession();
   try {
-    const media = await Media.findById(req.params.id);
-    if (!media) return res.status(404).json({ error: 'Media not found' });
+    session.startTransaction();
+    const media = await Media.findById(req.params.id).session(session);
+    if (!media) {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(404).json({ error: 'Media not found' });
+    }
 
     if (req.user.unlockedMedia.includes(media._id) || media.owner.toString() === req.user._id.toString()) {
+      await session.abortTransaction();
+      session.endSession();
       return res.status(400).json({ error: 'Already unlocked or you are the owner' });
     }
 
     if (req.user.walletBalance < media.price) {
+      await session.abortTransaction();
+      session.endSession();
       return res.status(400).json({ error: 'Insufficient coins in wallet' });
     }
 
     // Deduct balance from buyer and add to unlocked list
     req.user.walletBalance -= media.price;
     req.user.unlockedMedia.push(media._id);
-    await req.user.save();
+    await req.user.save({ session });
 
     // Add balance to the media owner
     await User.findByIdAndUpdate(media.owner, {
       $inc: { walletBalance: media.price }
-    });
+    }, { session });
 
     // Create transaction log
-    await Transaction.create({
+    await Transaction.create([{
       buyer: req.user._id,
       seller: media.owner,
       media: media._id,
       amount: media.price,
       type: 'purchase'
-    });
+    }], { session });
+
+    await session.commitTransaction();
+    session.endSession();
 
     res.json({ message: 'Unlocked successfully', balance: req.user.walletBalance });
   } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
     res.status(500).json({ error: error.message });
   }
 };

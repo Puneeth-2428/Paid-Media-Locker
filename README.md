@@ -25,13 +25,29 @@ Both the Backend API and the Database/Storage components are fully containerized
 
 ### 1. Start the Backend Infrastructure
 The backend is fully dockerized. To start the API, MongoDB, and S3 server:
-```bash
-# Navigate to the root directory
-cd paid-media
+   ```bash
+   cd backend
+   npm install
+   ```
 
-# Build and start the containers in detached mode
-docker-compose up -d --build
-```
+3. **Configure Environment Variables:**
+   Copy the example environment file:
+   ```bash
+   cp .env.example .env
+   ```
+   **Note on S3_PUBLIC_HOST**: The `.env` file contains `S3_PUBLIC_HOST` which defaults to `http://localhost:4568`. This is used to serve S3 media URLs. If you are testing on a physical mobile device or Android emulator, set this to your local machine's IP (e.g., `http://192.168.1.5:4568`) or `http://10.0.2.2:4568` for Android emulators.
+
+4. **Start the Backend Services:**
+   Run the full backend stack (API, S3rver, MongoDB) using Docker Compose:
+   ```bash
+   docker-compose up --build -d
+   ```
+
+5. **Seed the Database (Demo Content):**
+   Once the database is up, you can seed it with the evaluator demo credentials (`demo@konvo.com` / `password123`) and initial media:
+   ```bash
+   npm run seed
+   ```
 The backend API will be available at `http://localhost:4000`.
 
 ### 2. Configure the Mobile App Network

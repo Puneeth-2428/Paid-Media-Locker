@@ -16,7 +16,7 @@ const s3 = new AWS.S3({
 const s3External = new AWS.S3({
   accessKeyId: 'S3RVER',
   secretAccessKey: 'S3RVER',
-  endpoint: 'http://10.24.8.121:4568',
+  endpoint: process.env.S3_PUBLIC_HOST || 'http://localhost:4568',
   s3ForcePathStyle: true,
   signatureVersion: 'v4', 
 });
