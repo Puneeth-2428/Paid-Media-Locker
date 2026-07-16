@@ -1,0 +1,23 @@
+{
+  "expo": {
+    "name": "Paid Media Locker",
+    "slug": "paid-media-locker",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "backgroundColor": "#121212"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#121212"
+      }
+    }
+  }
+}
