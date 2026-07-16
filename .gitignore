@@ -1,0 +1,32 @@
+# Node.js dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Backend Storage (S3rver local data)
+backend/storage/
+backend/media-bucket/
+paid-media-bucket/
+
+# Mobile App build and temp files
+mobile-app/.expo/
+mobile-app/dist/
+mobile-app/web-build/
+mobile-app/npm-debug.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+
+# macOS/Windows system files
+.DS_Store
+Thumbs.db
