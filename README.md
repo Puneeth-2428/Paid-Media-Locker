@@ -80,14 +80,3 @@ This ensures that even if a user attempts to share the URL with a non-paying use
 
 ### 5. Rate Limiting
 To prevent brute-force attacks on the authentication endpoints and API abuse, `express-rate-limit` is configured to limit requests to the API.
-
-## Deliverables Checklist
-- [x] Source Code
-- [x] README (This file)
-- [x] API Documentation (`API_DOCUMENTATION.md`)
-- [x] Database Schema (`DATABASE_SCHEMA.md`)
-- [x] Setup Instructions (Included above)
-- [x] Caching Implementation (Bonus)
-- [x] Automated Tests (Bonus)
-- [x] Docker Setup (Bonus)
-- [x] CI/CD Setup (Bonus)
